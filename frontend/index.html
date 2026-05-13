@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Salto del Trazacaminos</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ────────────────────────────────────────────────── */
+:root {
+  --void:    #060610;
+  --deep:    #0c0c22;
+  --panel:   #10102a;
+  --card:    #14143a;
+  --lift:    #1c1c4a;
+  --border:  rgba(160,140,255,0.12);
+  --border2: rgba(160,140,255,0.25);
+  --text:    #e8e4ff;
+  --muted:   #6b6890;
+  --hint:    #3d3a5c;
+  --gold:    #f0c060;
+  --gold2:   #ffd580;
+  --purple:  #b088ff;
+  --blue:    #60b8ff;
+  --pink:    #ff80c0;
+  --teal:    #40e0d0;
+  --ssr-col: #f0c060;
+  --sr-col:  #c084fc;
+  --r-col:   #60a5fa;
+  --accent:  #a060ff;
+  --accent2: #7040cc;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Cosmic background ──────────────────────────────────────── */
+.bg-cosmos {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+}
+.bg-cosmos::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 15% 20%, rgba(100,60,200,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 85% 80%, rgba(40,100,220,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(160,80,255,0.06) 0%, transparent 70%);
+}
+/* Animated stars */
+.stars { position: absolute; inset: 0; }
+.star {
+  position: absolute; border-radius: 50%;
+  background: #fff; animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes twinkle {
+  0%,100% { opacity: var(--min-op, 0.1); transform: scale(1); }
+  50%      { opacity: var(--max-op, 0.8); transform: scale(1.3); }
+}
+/* Floating orbs */
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: 0.12;
+  animation: drift var(--dur, 20s) ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(var(--tx, 40px), var(--ty, -30px)); }
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.app { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 20px 40px; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+header {
+  text-align: center;
+  padding: 48px 0 32px;
+  position: relative;
+}
+.header-deco {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin-bottom: 12px;
+}
+.deco-line {
+  height: 1px; width: 80px;
+  background: linear-gradient(90deg, transparent, rgba(160,96,255,0.6));
+}
+.deco-line.right { transform: scaleX(-1); }
+.deco-gem {
+  width: 8px; height: 8px; background: var(--purple);
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px var(--purple);
+}
+.logo-eyebrow {
+  font-size: 0.72rem; letter-spacing: 5px; color: var(--purple);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 10px;
+}
+.logo-main {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  font-weight: 900;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #fff 0%, #d4b8ff 35%, #90d0ff 70%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(160,96,255,0.5));
+  margin-bottom: 6px;
+}
+.logo-sub {
+  font-size: 0.85rem; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Status bar ─────────────────────────────────────────────── */
+.status-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  margin-bottom: 28px;
+}
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 30px; padding: 7px 16px;
+  font-size: 0.88rem; font-weight: 700;
+  transition: border-color 0.2s;
+}
+.chip:hover { border-color: var(--border2); }
+.chip-val { color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 8px #2ecc71; flex-shrink: 0; }
+.dot.off { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
+
+/* ── Main grid ──────────────────────────────────────────────── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media(max-width:960px){ .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Panel ──────────────────────────────────────────────────── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.panel-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--deep);
+  display: flex; align-items: center; gap: 10px;
+}
+.panel-icon { font-size: 1rem; }
+.panel-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+}
+.panel-body { padding: 20px; }
+
+/* ── Banner selector ────────────────────────────────────────── */
+.banner-scroll {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.banner-scroll::-webkit-scrollbar { display: none; }
+
+.banner-tab {
+  flex-shrink: 0; padding: 8px 14px;
+  border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer;
+  color: var(--muted); font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 0.8rem; transition: all 0.2s;
+  white-space: nowrap;
+}
+.banner-tab:hover { border-color: var(--border2); color: var(--text); }
+.banner-tab.perm.active { border-color: var(--gold); color: var(--gold); background: rgba(240,192,96,0.08); }
+.banner-tab.lim.active  { border-color: var(--purple); color: var(--purple); background: rgba(176,136,255,0.08); }
+
+/* ── Banner card (showcase) ─────────────────────────────────── */
+.banner-card {
+  border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+  position: relative; aspect-ratio: 16/7;
+  background: var(--card); border: 1px solid var(--border);
+}
+.banner-card-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--card-a, #1a1060) 0%, var(--card-b, #0c0c30) 100%);
+}
+.banner-card-img {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 55%; object-fit: cover; object-position: top center;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.8) 30%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.8) 30%, #000 100%);
+}
+.banner-card-placeholder {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 55%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; opacity: 0.15;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.8) 30%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.8) 30%, #000 100%);
+}
+.banner-card-info {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 55%;
+  padding: 16px 18px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.banner-type-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 4px;
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 6px; width: fit-content;
+}
+.badge-perm { background: rgba(240,192,96,0.15); border: 1px solid rgba(240,192,96,0.4); color: var(--gold); }
+.badge-lim  { background: rgba(176,136,255,0.15); border: 1px solid rgba(176,136,255,0.4); color: var(--purple); }
+
+.banner-card-name {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.2rem; font-weight: 900; line-height: 1.2;
+  color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  margin-bottom: 4px;
+}
+.banner-card-sub { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+
+.rate-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.rpill {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px;
+}
+.rpill.ssr { background: rgba(240,192,96,0.12); border: 1px solid rgba(240,192,96,0.5); color: var(--gold); }
+.rpill.sr  { background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.4); color: var(--sr-col); }
+.rpill.r   { background: rgba(96,165,250,0.10);  border: 1px solid rgba(96,165,250,0.35); color: var(--r-col); }
+
+/* ── Pull buttons ───────────────────────────────────────────── */
+.pull-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.pull-btn {
+  padding: 12px 8px; border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem;
+  letter-spacing: 0.5px; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.pull-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,0); transition: background 0.2s;
+}
+.pull-btn:hover::after { background: rgba(255,255,255,0.06); }
+.pull-btn:active { transform: scale(0.97); }
+.pull-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pbtn-1t {
+  background: linear-gradient(135deg, #3a2a8a, #5538b8);
+  color: #fff; border: 1px solid rgba(160,96,255,0.4);
+  box-shadow: 0 3px 16px rgba(80,40,180,0.35);
+}
+.pbtn-10t {
+  background: linear-gradient(135deg, #6a30cc, #9050e8);
+  color: #fff; border: 1px solid rgba(200,100,255,0.5);
+  box-shadow: 0 3px 20px rgba(130,60,220,0.4);
+}
+.pbtn-1c, .pbtn-10c {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); font-size: 0.82rem;
+}
+.pbtn-1c:hover, .pbtn-10c:hover { border-color: var(--border2); color: var(--text); }
+
+.btn-label { font-size: 0.65rem; display: block; opacity: 0.7; margin-top: 2px; }
+.coin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+/* ── Pity bar ───────────────────────────────────────────────── */
+.pity-wrap { margin-top: 16px; }
+.pity-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.pity-label { font-size: 0.78rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.pity-count { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: var(--text); }
+.pity-track { height: 6px; border-radius: 3px; background: var(--hint); overflow: visible; position: relative; }
+.pity-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #5038c0, #9050e8, #d080ff);
+  transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+.pity-fill::after {
+  content: ''; position: absolute; right: -4px; top: -3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #d080ff; box-shadow: 0 0 10px #a060ff;
+  display: var(--dot-show, none);
+}
+.soft-line {
+  position: absolute; top: -5px; bottom: -5px;
+  width: 1px; background: rgba(240,192,96,0.5);
+}
+.soft-line::after {
+  content: 'Soft'; position: absolute; top: -18px; left: 4px;
+  font-size: 0.6rem; color: var(--gold); font-weight: 700; white-space: nowrap;
+}
+.pity-warn {
+  margin-top: 6px; font-size: 0.75rem; color: var(--gold);
+  font-weight: 700; display: none;
+}
+.pity-warn.show { display: block; }
+
+/* ── Rate chart ─────────────────────────────────────────────── */
+.chart-wrap { margin-top: 18px; }
+.chart-head { font-size: 0.72rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+.chart-box {
+  height: 100px; background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+canvas#rate-chart { width: 100%; height: 100%; display: block; }
+
+/* ── Right panel tabs ───────────────────────────────────────── */
+.tab-nav {
+  display: flex; border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  background: var(--deep);
+}
+.tab-btn {
+  padding: 14px 16px; border: none; background: transparent;
+  color: var(--muted); cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 0.85rem; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.2s; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+.tab-pane { display: none; padding: 20px; }
+.tab-pane.active { display: block; }
+
+/* ── Stats cards ────────────────────────────────────────────── */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+@media(max-width:600px){ .stats-grid { grid-template-columns: repeat(2,1fr); } }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 12px; text-align: center;
+}
+.stat-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.6rem; font-weight: 400; line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-num.col-gold   { color: var(--gold); }
+.stat-num.col-purple { color: var(--sr-col); }
+.stat-num.col-blue   { color: var(--r-col); }
+.stat-num.col-teal   { color: var(--teal); }
+.stat-lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+
+.arch-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; font-size: 0.82rem; line-height: 2;
+}
+.arch-box b { color: var(--purple); }
+
+/* ── History ────────────────────────────────────────────────── */
+.history-wrap { max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--hint) transparent; }
+.hist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; margin-bottom: 4px;
+  border: 1px solid var(--border); background: var(--card);
+  transition: border-color 0.2s;
+}
+.hist-item:hover { border-color: var(--border2); }
+.hist-item.rSSR { border-color: rgba(240,192,96,0.35); background: rgba(240,192,96,0.05); }
+.hist-item.rSR  { border-color: rgba(192,132,252,0.25); }
+.hist-avatar {
+  width: 36px; height: 36px; border-radius: 8px;
+  object-fit: cover; flex-shrink: 0;
+  background: var(--lift);
+}
+.hist-avatar-placeholder {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+  background: var(--lift);
+}
+.hist-info { flex: 1; min-width: 0; }
+.hist-name { font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-element { font-size: 0.72rem; color: var(--muted); }
+.hist-rarity { font-size: 0.72rem; font-weight: 800; letter-spacing: 1px; }
+.hist-rarity.SSR { color: var(--gold); }
+.hist-rarity.SR  { color: var(--sr-col); }
+.hist-rarity.R   { color: var(--r-col); }
+.hist-pity-badge {
+  font-size: 0.62rem; padding: 2px 6px; border-radius: 4px;
+  font-weight: 800; letter-spacing: 1px;
+  background: rgba(240,192,96,0.12); color: var(--gold);
+}
+.hist-time { font-size: 0.7rem; color: var(--hint); font-family: 'Share Tech Mono', monospace; }
+
+/* ── Inventory ──────────────────────────────────────────────── */
+.inv-wrap { max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--hint) transparent; }
+.inv-section-title {
+  font-size: 0.7rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 700; margin: 12px 0 8px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.inv-grid-inner { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.inv-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 6px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--card);
+  font-size: 0.82rem; font-weight: 700;
+}
+.inv-chip.SSR { border-color: rgba(240,192,96,0.4); background: rgba(240,192,96,0.06); }
+.inv-chip.SR  { border-color: rgba(192,132,252,0.3); background: rgba(192,132,252,0.05); }
+.inv-chip img, .inv-chip .inv-em {
+  width: 28px; height: 28px; border-radius: 6px;
+  object-fit: cover; background: var(--lift);
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+
+/* ── Resources tab ──────────────────────────────────────────── */
+.res-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+.res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.res-btn {
+  padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); cursor: pointer; color: var(--text);
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem;
+  transition: all 0.2s; text-align: center;
+}
+.res-btn:hover { border-color: var(--border2); background: var(--lift); }
+.res-btn span { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+/* ── Pull result overlay ────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,4,18,0.94);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s;
+  backdrop-filter: blur(10px);
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.result-box {
+  background: var(--panel); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 32px; width: min(780px, 94vw);
+  max-height: 88vh; overflow-y: auto; scrollbar-width: thin;
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+}
+.overlay.show .result-box { transform: translateY(0) scale(1); }
+
+.result-header { text-align: center; margin-bottom: 24px; }
+.result-title {
+  font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+.result-summary { font-size: 0.85rem; color: var(--muted); }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 10px; }
+
+.pull-card {
+  border-radius: 12px; overflow: hidden; position: relative;
+  border: 1px solid var(--border);
+  animation: cardAppear 0.4s cubic-bezier(.4,0,.2,1) both;
+  cursor: default;
+}
+@keyframes cardAppear {
+  from { opacity: 0; transform: translateY(16px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pull-card.SSR {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(240,192,96,0.3), inset 0 0 30px rgba(240,192,96,0.05);
+}
+.pull-card.SSR .card-inner { background: linear-gradient(160deg, rgba(240,192,96,0.18), rgba(240,192,96,0.04)); }
+.pull-card.SR {
+  border-color: rgba(192,132,252,0.7);
+  box-shadow: 0 0 14px rgba(192,132,252,0.2);
+}
+.pull-card.SR .card-inner { background: linear-gradient(160deg, rgba(192,132,252,0.14), rgba(192,132,252,0.03)); }
+.pull-card.R .card-inner  { background: var(--card); }
+
+.card-inner { padding: 14px 10px; text-align: center; }
+.card-art {
+  width: 72px; height: 72px; border-radius: 10px;
+  object-fit: cover; margin: 0 auto 8px;
+  display: block; background: var(--lift);
+}
+.card-art-placeholder {
+  width: 72px; height: 72px; border-radius: 10px;
+  margin: 0 auto 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; background: var(--lift);
+}
+.card-name { font-weight: 800; font-size: 0.82rem; line-height: 1.25; margin-bottom: 4px; }
+.card-element { font-size: 0.7rem; color: var(--muted); margin-bottom: 6px; }
+.card-rarity-badge {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 2px;
+  padding: 2px 8px; border-radius: 10px; display: inline-block;
+}
+.card-rarity-badge.SSR { color: var(--gold); background: rgba(240,192,96,0.12); border: 1px solid rgba(240,192,96,0.3); }
+.card-rarity-badge.SR  { color: var(--sr-col); background: rgba(192,132,252,0.10); border: 1px solid rgba(192,132,252,0.3); }
+.card-rarity-badge.R   { color: var(--r-col);  background: rgba(96,165,250,0.08);  border: 1px solid rgba(96,165,250,0.25); }
+
+.card-corner-badge {
+  position: absolute; top: 5px; right: 5px;
+  font-size: 0.56rem; padding: 2px 5px; border-radius: 4px;
+  font-weight: 800; letter-spacing: 1px;
+  background: rgba(240,192,96,0.15); color: var(--gold);
+}
+.featured-crown {
+  position: absolute; top: 5px; left: 5px;
+  font-size: 0.7rem;
+}
+
+.btn-close-overlay {
+  width: 100%; margin-top: 22px; padding: 14px; border-radius: 10px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text); cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase;
+  transition: all 0.2s;
+}
+.btn-close-overlay:hover { background: var(--lift); }
+
+/* ── Toast ──────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem;
+  background: var(--panel); border: 1px solid var(--border);
+  transform: translateY(60px); opacity: 0; transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok  { border-color: rgba(46,204,113,0.5); color: #2ecc71; }
+.toast.err { border-color: rgba(231,76,60,0.5); color: #e74c3c; }
+
+/* ── Element colors ─────────────────────────────────────────── */
+.el-Fuego     { color: #ff8c60; }
+.el-Oscuridad { color: #b088ff; }
+.el-Viento    { color: #40e0d0; }
+.el-Metal     { color: #c0c8d8; }
+.el-Hielo     { color: #80c8ff; }
+.el-Tierra    { color: #c8a060; }
+.el-Luz       { color: #ffd870; }
+.el-Rayo      { color: #60c8ff; }
+.el-Estelar   { color: #d0a0ff; }
+
+/* ── Hard Pity card ──────────────────────────────────────────── */
+.hard-pity-card {
+  box-shadow: 0 0 0 2px #f0c060, 0 0 40px rgba(240,192,96,0.55) !important;
+  animation: cardAppear 0.4s cubic-bezier(.4,0,.2,1) both, hardPityPulse 1.4s ease-in-out 0.4s 4 !important;
+}
+@keyframes hardPityPulse {
+  0%,100% { box-shadow: 0 0 0 2px #f0c060, 0 0 18px rgba(240,192,96,0.4); }
+  50%     { box-shadow: 0 0 0 3px #ffd580, 0 0 60px rgba(240,192,96,0.85); }
+}
+.featured-card {
+  box-shadow: 0 0 0 2px #b088ff, 0 0 36px rgba(176,136,255,0.5) !important;
+  animation: cardAppear 0.4s cubic-bezier(.4,0,.2,1) both, featuredPulse 1.4s ease-in-out 0.4s 4 !important;
+}
+@keyframes featuredPulse {
+  0%,100% { box-shadow: 0 0 0 2px #b088ff, 0 0 16px rgba(176,136,255,0.35); }
+  50%     { box-shadow: 0 0 0 3px #d0a0ff, 0 0 55px rgba(176,136,255,0.75); }
+}
+.flash-screen {
+  position: fixed; inset: 0; z-index: 500; pointer-events: none; opacity: 0;
+}
+.flash-screen.gold   { background: radial-gradient(ellipse at center, rgba(240,192,64,0.55) 0%, transparent 70%); }
+.flash-screen.purple { background: radial-gradient(ellipse at center, rgba(176,136,255,0.5) 0%, transparent 70%); }
+@keyframes flashIn { 0% { opacity:0; } 15% { opacity:1; } 100% { opacity:0; } }
+.event-banner {
+  border-radius: 10px; padding: 14px 20px; margin-bottom: 20px;
+  text-align: center; border: 1px solid;
+  animation: eventBannerIn 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes eventBannerIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.event-banner.hard { background: rgba(240,192,64,0.08); border-color: rgba(240,192,64,0.4); }
+.event-banner.featured { background: rgba(176,136,255,0.08); border-color: rgba(176,136,255,0.4); }
+.event-banner-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+.event-banner-title { font-family: 'Noto Serif SC', serif; font-size: 1.1rem; font-weight: 900; display: block; margin-bottom: 4px; }
+.event-banner.hard .event-banner-title { color: var(--gold); }
+.event-banner.featured .event-banner-title { color: var(--sr-col); }
+.event-banner-desc { font-size: 0.8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Cosmos background -->
+<div class="bg-cosmos">
+  <div class="stars" id="stars"></div>
+  <div class="orb" style="width:500px;height:500px;background:#6040cc;top:-10%;left:-10%;--dur:25s;--tx:30px;--ty:20px;"></div>
+  <div class="orb" style="width:400px;height:400px;background:#2040a0;bottom:-10%;right:-10%;--dur:30s;--tx:-20px;--ty:-30px;"></div>
+  <div class="orb" style="width:300px;height:300px;background:#8020a0;top:40%;left:40%;--dur:20s;--tx:40px;--ty:-20px;"></div>
+</div>
+
+<div class="app">
+  <!-- Header -->
+  <header>
+    <div class="logo-eyebrow">✦ Sistema de Invocación ✦</div>
+    <div class="header-deco">
+      <div class="deco-line"></div>
+      <div class="deco-gem"></div>
+      <div class="deco-line right"></div>
+    </div>
+    <h1 class="logo-main">El Salto del Trazacaminos</h1>
+    <p class="logo-sub">Práctica · Microservicios con Docker</p>
+  </header>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="chip">🪙 <span class="chip-val" id="coins">—</span> Monedas</div>
+    <div class="chip">🎫 <span class="chip-val" id="tickets">—</span> Tickets</div>
+    <div class="chip">🎭 <span class="chip-val" id="inv-count">—</span> Personajes</div>
+    <div class="chip" id="guarantee-chip" style="display:none">🛡️ <span style="color:#c084fc;font-weight:800">GARANTÍA ACTIVA</span></div>
+    <div class="chip"><div class="dot" id="dot-inv"></div> Inventario :5001</div>
+    <div class="chip"><div class="dot" id="dot-ban"></div> Banner :5002</div>
+    <div class="chip"><div class="dot" id="dot-pit"></div> Pity :5003</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-grid">
+
+    <!-- LEFT: Pull panel -->
+    <div class="panel">
+      <div class="panel-head"><span class="panel-icon">✦</span><span class="panel-title">Invocar</span></div>
+      <div class="panel-body">
+
+        <!-- Banner tabs -->
+        <div class="banner-scroll" id="banner-tabs"></div>
+
+        <!-- Banner showcase card -->
+        <div class="banner-card" id="banner-card">
+          <div class="banner-card-bg" id="banner-bg"></div>
+          <div class="banner-card-placeholder" id="banner-placeholder">✦</div>
+          <img class="banner-card-img" id="banner-img" src="" style="display:none" alt="">
+          <div class="banner-card-info">
+            <span class="banner-type-badge" id="banner-badge">PERMANENTE</span>
+            <div class="banner-card-name" id="banner-name">—</div>
+            <div class="banner-card-sub" id="banner-sub">—</div>
+          </div>
+        </div>
+
+        <!-- Rates -->
+        <div class="rate-row">
+          <span class="rpill ssr" id="rate-ssr">SSR 0.6%</span>
+          <span class="rpill sr"  id="rate-sr">SR 5.1%</span>
+          <span class="rpill r"   id="rate-r">R 94.3%</span>
+          <span class="rpill r" style="border-color:rgba(240,192,96,0.4);color:var(--gold)" id="pity-limit-pill">Pity: 90</span>
+        </div>
+
+        <!-- Pull buttons -->
+        <div class="pull-grid">
+          <button class="pull-btn pbtn-1t" onclick="doPull(1,false)">
+            🎫 Invocar ×1 <span class="btn-label">1 ticket</span>
+          </button>
+          <button class="pull-btn pbtn-10t" onclick="doPull(10,false)">
+            ✨ Invocar ×10 <span class="btn-label">10 tickets</span>
+          </button>
+        </div>
+        <div class="coin-grid">
+          <button class="pull-btn pbtn-1c" onclick="doPull(1,true)">🪙 ×1 con monedas</button>
+          <button class="pull-btn pbtn-10c" onclick="doPull(10,true)">🪙 ×10 con monedas</button>
+        </div>
+
+        <!-- Pity bar -->
+        <div class="pity-wrap">
+          <div class="pity-meta">
+            <span class="pity-label">Pity Acumulado</span>
+            <span class="pity-count"><span id="pity-cur">0</span> / <span id="pity-max">90</span></span>
+          </div>
+          <div class="pity-track" id="pity-track">
+            <div class="pity-fill" id="pity-fill" style="width:0%"></div>
+          </div>
+          <div class="pity-warn" id="pity-warn">⚡ ¡Soft Pity activo! Probabilidad aumentando...</div>
+        </div>
+
+        <!-- Rate chart -->
+        <div class="chart-wrap">
+          <div class="chart-head">📈 Curva de probabilidad SSR</div>
+          <div class="chart-box"><canvas id="rate-chart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Info panel -->
+    <div class="panel">
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('stats',this)">📊 Estadísticas</button>
+        <button class="tab-btn" onclick="switchTab('history',this)">📜 Historial</button>
+        <button class="tab-btn" onclick="switchTab('inventory',this)">🎭 Personajes</button>
+        <button class="tab-btn" onclick="switchTab('resources',this)">💰 Recursos</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="tab-pane active" id="tab-stats">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Total Pulls</div></div>
+          <div class="stat-card"><div class="stat-num col-gold" id="s-ssr">0</div><div class="stat-lbl">SSR ✦</div></div>
+          <div class="stat-card"><div class="stat-num col-purple" id="s-sr">0</div><div class="stat-lbl">SR ◆</div></div>
+          <div class="stat-card"><div class="stat-num col-blue" id="s-r">0</div><div class="stat-lbl">R ●</div></div>
+          <div class="stat-card"><div class="stat-num col-teal" id="s-rate">0.00%</div><div class="stat-lbl">Tasa SSR real</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-soft">0</div><div class="stat-lbl">Soft Pity</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-hard">0</div><div class="stat-lbl">Hard Pity</div></div>
+          <div class="stat-card"><div class="stat-num col-gold" id="s-featured">0</div><div class="stat-lbl">Destacados</div></div>
+        </div>
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px;">
+          <div class="stat-card"><div class="stat-num col-teal" id="s-50wins">0</div><div class="stat-lbl">50/50 Ganados</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-50loss">0</div><div class="stat-lbl">50/50 Perdidos</div></div>
+        </div>
+        <div class="arch-box">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Arquitectura de Microservicios</div>
+          🌐 <b>API Gateway</b> — Orquesta todas las llamadas REST<br>
+          📦 <b>Inventario</b> :5001 — Recursos y personajes (SQLite)<br>
+          🎲 <b>Banner/RNG</b> :5002 — Probabilidades dinámicas<br>
+          📊 <b>Pity/Historial</b> :5003 — Contador ajuste automático
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="tab-pane" id="tab-history">
+        <div class="history-wrap" id="history-list">
+          <div style="color:var(--muted);text-align:center;padding:40px 20px;font-size:0.9rem;">
+            Aún no hay tiradas — ¡invoca tu primer personaje!
+          </div>
+        </div>
+        <button class="res-btn" style="width:100%;margin-top:12px;" onclick="loadHistory()">↺ Actualizar historial</button>
+      </div>
+
+      <!-- Inventory -->
+      <div class="tab-pane" id="tab-inventory">
+        <div class="inv-wrap" id="inv-content">
+          <div style="color:var(--muted);text-align:center;padding:40px 20px;font-size:0.9rem;">
+            Inventario vacío — comienza a invocar
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources -->
+      <div class="tab-pane" id="tab-resources">
+        <p class="res-desc">Añade recursos al jugador para realizar más invocaciones durante la práctica:</p>
+        <div class="res-grid">
+          <button class="res-btn" onclick="addRes(0,5)">+5 🎫 Tickets<span>Para 5 invocaciones</span></button>
+          <button class="res-btn" onclick="addRes(0,20)">+20 🎫 Tickets<span>Para 20 invocaciones</span></button>
+          <button class="res-btn" onclick="addRes(1500,0)">+1500 🪙 Monedas<span>Para 10 invocaciones</span></button>
+          <button class="res-btn" onclick="addRes(10000,0)">+10000 🪙 Monedas<span>Para ~62 invocaciones</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Result overlay -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="result-box">
+    <div class="result-header">
+      <div class="result-title" id="res-title">Invocación</div>
+      <div class="result-summary" id="res-summary"></div>
+    </div>
+    <div id="res-event"></div>
+    <div class="cards-grid" id="res-grid"></div>
+    <button class="btn-close-overlay" onclick="closeOverlay(true)">✦ &nbsp;Continuar&nbsp; ✦</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="flash-screen" id="flash-screen"></div>
+
+<script>
+const API = '';
+let selectedBanner = 'permanente';
+let bannerData = {};
+const PLAYER = 'player1';
+
+// ── Element colors/emojis ─────────────────────────────────────────
+const EL_EMOJI = {
+  'Fuego':'🔥','Oscuridad':'🌑','Viento':'🍃','Metal':'⚙️',
+  'Hielo':'❄️','Tierra':'🌿','Luz':'✨','Rayo':'⚡','Estelar':'🌌'
+};
+// Default character emoji by id fallback
+const CHAR_EMOJI = {
+  valerian:'⚔️',sylvara:'🌑',crestfall:'🌪️',ironveil:'🛡️',
+  seraphiel:'👼',malphas:'😈',astraea:'🌌',
+  ember:'🔥',frostbite:'❄️',galeforce:'💨',thornwick:'🌿',
+  solenne:'☀️',krauss:'⚡',dawn_knight:'🏆',starweave:'⭐',
+  voidwalker:'🕳️',comet:'☄️',
+};
+function charEmoji(id){ return CHAR_EMOJI[id] || EL_EMOJI['Luz'] || '✦'; }
+
+// ── Stars ─────────────────────────────────────────────────────────
+(function spawnStars(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<140;i++){
+    const s = document.createElement('div'); s.className='star';
+    const size = Math.random()*2+0.5;
+    s.style.cssText = `
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      width:${size}px; height:${size}px;
+      --dur:${2+Math.random()*4}s; --delay:${Math.random()*5}s;
+      --min-op:${0.05+Math.random()*0.15}; --max-op:${0.4+Math.random()*0.6};
+    `;
+    c.appendChild(s);
+  }
+})();
+
+// ── Init ──────────────────────────────────────────────────────────
+async function init(){
+  await checkHealth();
+  await loadBanners();
+  await loadPlayer();
+  await loadHistory();
+  await loadStats();
+  setInterval(checkHealth, 30000);
+}
+
+// ── Health ────────────────────────────────────────────────────────
+async function checkHealth(){
+  try{
+    const d = await fetch(`${API}/health`).then(r=>r.json());
+    setDot('dot-inv', d.services?.inventory?.status==='ok');
+    setDot('dot-ban', d.services?.banner?.status==='ok');
+    setDot('dot-pit', d.services?.pity?.status==='ok');
+  }catch{ ['dot-inv','dot-ban','dot-pit'].forEach(id=>setDot(id,false)); }
+}
+function setDot(id,ok){
+  const el=document.getElementById(id);
+  ok ? el.classList.remove('off') : el.classList.add('off');
+}
+
+// ── Banners ───────────────────────────────────────────────────────
+async function loadBanners(){
+  const d = await fetch(`${API}/api/banners`).then(r=>r.json());
+  d.banners.forEach(b=>bannerData[b.id]=b);
+  buildBannerTabs(d.banners);
+  updateBannerUI();
+  drawChart();
+}
+
+function buildBannerTabs(banners){
+  const c = document.getElementById('banner-tabs');
+  c.innerHTML = banners.map(b=>`
+    <button class="banner-tab ${b.type==='permanent'?'perm':'lim'} ${b.id===selectedBanner?'active':''}"
+      onclick="selectBanner('${b.id}',this,'${b.type}')">
+      ${b.type==='permanent' ? '📖' : '⭐'} ${b.name}
+    </button>
+  `).join('');
+}
+
+function selectBanner(id, el, type){
+  selectedBanner = id;
+  document.querySelectorAll('.banner-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  updateBannerUI();
+  loadPity();
+  drawChart();
+}
+
+function updateBannerUI(){
+  const b = bannerData[selectedBanner]; if(!b) return;
+  const isPerm = b.type === 'permanent';
+
+  // Badge
+  const badge = document.getElementById('banner-badge');
+  badge.textContent = isPerm ? 'PERMANENTE' : 'LIMITADO';
+  badge.className = 'banner-type-badge ' + (isPerm ? 'badge-perm' : 'badge-lim');
+
+  // Card gradient
+  const bg = document.getElementById('banner-bg');
+  if(isPerm){
+    bg.style.background = 'linear-gradient(135deg, #2a1800 0%, #0c0c22 100%)';
+  } else {
+    const gradients = {
+      limitado_aurora:  'linear-gradient(135deg, #1a0e00 0%, #1a0a2a 100%)',
+      limitado_abismo:  'linear-gradient(135deg, #080820 0%, #0a0018 100%)',
+      limitado_tormenta:'linear-gradient(135deg, #080018 0%, #180820 100%)',
+    };
+    bg.style.background = gradients[selectedBanner] || 'linear-gradient(135deg, #10102a, #060618)';
+  }
+
+  // Featured character image
+  const imgEl = document.getElementById('banner-img');
+  const phEl  = document.getElementById('banner-placeholder');
+  if(b.featured_character){
+    imgEl.src = `/images/${b.featured_character}.png`;
+    imgEl.onerror = ()=>{ imgEl.style.display='none'; phEl.style.display='flex'; phEl.textContent=charEmoji(b.featured_character); };
+    imgEl.onload  = ()=>{ imgEl.style.display='block'; phEl.style.display='none'; };
+    imgEl.style.display='block';
+  } else {
+    imgEl.style.display='none'; phEl.style.display='flex'; phEl.textContent='✦';
+  }
+
+  document.getElementById('banner-name').textContent = b.name;
+  document.getElementById('banner-sub').textContent  = b.subtitle;
+  document.getElementById('rate-ssr').textContent = `SSR ${(b.rates.SSR*100).toFixed(1)}%`;
+  document.getElementById('rate-sr').textContent  = `SR ${(b.rates.SR*100).toFixed(1)}%`;
+  document.getElementById('rate-r').textContent   = `R ${(b.rates.R*100).toFixed(1)}%`;
+  document.getElementById('pity-limit-pill').textContent = `Pity: ${b.pity_limit}`;
+  document.getElementById('pity-max').textContent = b.pity_limit;
+}
+
+// ── Player ────────────────────────────────────────────────────────
+async function loadPlayer(){
+  const d = await fetch(`${API}/api/player/${PLAYER}`).then(r=>r.json());
+  document.getElementById('coins').textContent    = d.player.coins.toLocaleString('es-MX');
+  document.getElementById('tickets').textContent  = d.player.tickets;
+  document.getElementById('inv-count').textContent= d.inventory_count;
+  renderInventory(d.inventory);
+  loadPity(d.pity_data);
+}
+
+function renderInventory(inv){
+  const c = document.getElementById('inv-content');
+  if(!inv || inv.length===0){
+    c.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px 20px;font-size:0.9rem;">Inventario vacío</div>';
+    return;
+  }
+  const grouped = {SSR:[],SR:[],R:[]};
+  inv.forEach(i=>{ if(grouped[i.rarity]) grouped[i.rarity].push(i); });
+  let html='';
+  for(const [rar,items] of Object.entries(grouped)){
+    if(!items.length) continue;
+    html+=`<div class="inv-section-title">${rar} · ${items.length} personajes</div><div class="inv-grid-inner">`;
+    items.forEach(i=>{
+      html+=`<div class="inv-chip ${i.rarity}">
+        <div class="inv-em">
+          <img src="/images/${i.character_id}.png" style="width:28px;height:28px;border-radius:6px;object-fit:cover"
+            onerror="this.parentElement.textContent='${charEmoji(i.character_id)}'" alt="">
+        </div>
+        <span style="font-size:0.8rem">${i.character_name}</span>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  c.innerHTML='<div class="inv-wrap">'+html+'</div>';
+}
+
+// ── Pity ──────────────────────────────────────────────────────────
+async function loadPity(pityData){
+  if(!pityData){
+    const d = await fetch(`${API}/api/player/${PLAYER}`).then(r=>r.json());
+    pityData = d.pity_data || [];
+  }
+  const b = bannerData[selectedBanner]; if(!b) return;
+  const entry = pityData.find(p=>p.banner_id===selectedBanner);
+  const pity  = entry ? entry.pity_count : 0;
+
+  document.getElementById('pity-cur').textContent = pity;
+  const pct = (pity / b.pity_limit) * 100;
+  const fill = document.getElementById('pity-fill');
+  fill.style.width = pct+'%';
+  fill.style.setProperty('--dot-show', pct>2?'block':'none');
+
+  // Soft pity marker
+  const track = document.getElementById('pity-track');
+  let marker = track.querySelector('.soft-line');
+  if(!marker){ marker=document.createElement('div'); marker.className='soft-line'; track.appendChild(marker); }
+  marker.style.left = (b.soft_pity_start / b.pity_limit * 100)+'%';
+
+  const warn = document.getElementById('pity-warn');
+  warn.classList.toggle('show', pity >= b.soft_pity_start);
+
+  // Garantía 50/50
+  const isLimited = b.type === 'limited';
+  const gEntry    = (pityData || []).find ? (pityData || []).find(p=>p.banner_id===selectedBanner) : entry;
+  const hasGuarantee = gEntry && gEntry.guarantee_featured;
+  const gwarn = document.getElementById('guarantee-warn');
+  const gchip = document.getElementById('guarantee-chip');
+  if (isLimited) {
+    if (gwarn) gwarn.style.display = hasGuarantee ? 'block' : 'none';
+    if (gchip) gchip.style.display = hasGuarantee ? 'flex'  : 'none';
+  } else {
+    if (gwarn) gwarn.style.display = 'none';
+    if (gchip) gchip.style.display = 'none';
+  }
+}
+
+// ── Pull ──────────────────────────────────────────────────────────
+async function doPull(count, useCoins){
+  const btns = document.querySelectorAll('.pull-btn');
+  btns.forEach(b=>b.disabled=true);
+  try{
+    const r = await fetch(`${API}/api/pull`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({player_id:PLAYER,banner_id:selectedBanner,count,use_coins:useCoins})
+    });
+    const d = await r.json();
+    if(!r.ok){ showToast('❌ '+(d.error||'Error al invocar'),'err'); return; }
+
+    showResults(d.results, count);
+    document.getElementById('coins').textContent   = d.resources.coins.toLocaleString('es-MX');
+    document.getElementById('tickets').textContent = d.resources.tickets;
+
+    const b = bannerData[selectedBanner];
+    if(b){
+      const pity = d.pity.pity_count;
+      document.getElementById('pity-cur').textContent = pity;
+      document.getElementById('pity-fill').style.width = (pity/b.pity_limit*100)+'%';
+      document.getElementById('pity-warn').classList.toggle('show', pity >= b.soft_pity_start);
+    }
+    await loadPlayer();
+    await loadHistory();
+    await loadStats();
+  }catch(e){ showToast('❌ Sin conexión: '+e.message,'err'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+
+function showResults(results, count){
+  const ssrCount    = results.filter(r=>r.rarity==='SSR').length;
+  const srCount     = results.filter(r=>r.rarity==='SR').length;
+  const hardPityHit = results.some(r=>r.was_hard_pity && r.rarity==='SSR');
+  const featuredHit = results.some(r=>r.is_featured);
+
+  // Título según prioridad: hard pity > featured > ssr > normal
+  let titleText = count > 1 ? 'Invocación ×10' : 'Invocación';
+  if (ssrCount > 0)  titleText = '✦ ¡SSR Obtenido!';
+  if (featuredHit)   titleText = '✦ ¡Personaje Destacado!';
+  if (hardPityHit)   titleText = '🔱 ¡Garantía Activada!';
+  document.getElementById('res-title').textContent = titleText;
+
+  let extra = '';
+  if (hardPityHit && featuredHit) extra = ' · Garantía + ¡Destacado obtenido!';
+  else if (hardPityHit)           extra = ' · Pull de garantía (Hard Pity)';
+  else if (featuredHit)           extra = ' · ¡Obtuviste al personaje del banner!';
+  document.getElementById('res-summary').textContent =
+    `${count} invocación${count>1?'es':''} · ${ssrCount} SSR · ${srCount} SR · ${count-ssrCount-srCount} R${extra}`;
+
+  // Banner de evento especial
+  let eventHtml = '';
+  if (hardPityHit && featuredHit) {
+    eventHtml = `<div class="event-banner hard">
+      <span class="event-banner-icon">🔱👑</span>
+      <span class="event-banner-title">¡Garantía + Personaje Destacado!</span>
+      <span class="event-banner-desc">El pity activó la garantía y además obtuviste al personaje destacado del banner.</span>
+    </div>`;
+  } else if (hardPityHit) {
+    eventHtml = `<div class="event-banner hard">
+      <span class="event-banner-icon">🔱</span>
+      <span class="event-banner-title">¡Hard Pity — Garantía Activada!</span>
+      <span class="event-banner-desc">Alcanzaste el límite de pity. El sistema garantizó un SSR automáticamente.</span>
+    </div>`;
+  } else if (featuredHit) {
+    const wasGuaranteed = results.some(r=>r.was_guaranteed && r.is_featured);
+    const won50 = results.some(r=>r.won_fifty_fifty && !r.was_guaranteed);
+    let featDesc = '¡Obtuviste al personaje especial de este banner limitado!';
+    if (wasGuaranteed) featDesc = 'Tenías garantía de 50/50 activa — el destacado era tuyo seguro.';
+    else if (won50)    featDesc = '¡Ganaste el 50/50! Obtuviste al personaje destacado del banner.';
+    eventHtml = `<div class="event-banner featured">
+      <span class="event-banner-icon">${wasGuaranteed ? '🛡️👑' : '👑'}</span>
+      <span class="event-banner-title">${wasGuaranteed ? '¡Garantía 50/50 — Destacado Asegurado!' : '¡Personaje Destacado Obtenido!'}</span>
+      <span class="event-banner-desc">${featDesc}</span>
+    </div>`;
+  }
+  // Si hubo SSR pero no era el destacado → perdió 50/50
+  const bannerIsLimited = document.querySelector('.banner-tab.lim.active') !== null;
+  if (ssrCount > 0 && !featuredHit && !hardPityHit && bannerIsLimited) {
+    eventHtml = `<div class="event-banner" style="background:rgba(96,165,250,0.06);border-color:rgba(96,165,250,0.35)">
+      <span class="event-banner-icon">💔</span>
+      <span class="event-banner-title" style="color:var(--r-col)">Perdiste el 50/50</span>
+      <span class="event-banner-desc">Obtuviste un SSR del pool permanente. El próximo SSR en este banner <strong style="color:var(--sr-col)">garantiza al personaje destacado</strong>.</span>
+    </div>`;
+  }
+  document.getElementById('res-event').innerHTML = eventHtml;
+
+  // Cards
+  document.getElementById('res-grid').innerHTML = results.map((r,i)=>{
+    const delay = i * 70;
+    const extraClass = (r.was_hard_pity && r.rarity==='SSR') ? ' hard-pity-card'
+                     : r.is_featured                         ? ' featured-card' : '';
+    const pBadge = (r.was_hard_pity && r.rarity==='SSR')
+      ? '<span class="card-corner-badge">🔱 HARD</span>'
+      : (r.was_guaranteed) ? '<span class="card-corner-badge" style="background:rgba(192,132,252,0.2);color:var(--sr-col)">🛡️ GRTD</span>'
+      : r.was_soft_pity ? '<span class="card-corner-badge">⚡ SOFT</span>' : '';
+    const featBadge = r.is_featured ? '<span class="featured-crown">👑</span>' : '';
+    const emoji = charEmoji(r.character_id);
+    return `
+      <div class="pull-card ${r.rarity}${extraClass}" style="animation-delay:${delay}ms">
+        ${pBadge}${featBadge}
+        <div class="card-inner">
+          <img class="card-art"
+            src="/images/${r.character_id}.png"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+            alt="${r.character_name}">
+          <div class="card-art-placeholder" style="display:none">${emoji}</div>
+          <div class="card-name">${r.character_name}</div>
+          <div class="card-element">${EL_EMOJI[r.element]||''} ${r.element}</div>
+          <span class="card-rarity-badge ${r.rarity}">${r.rarity}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('overlay').classList.add('show');
+
+  // Flash de pantalla
+  if (hardPityHit || featuredHit) {
+    const flash = document.getElementById('flash-screen');
+    flash.className = 'flash-screen ' + (hardPityHit ? 'gold' : 'purple');
+    flash.style.animation = 'none';
+    flash.offsetHeight;
+    flash.style.animation = 'flashIn 1.4s ease-out forwards';
+  }
+}
+
+function closeOverlay(e){ if(e===true || e.target===e.currentTarget) document.getElementById('overlay').classList.remove('show'); }
+
+// ── History ───────────────────────────────────────────────────────
+async function loadHistory(){
+  const d = await fetch(`${API}/api/history/${PLAYER}?limit=40`).then(r=>r.json());
+  const c = document.getElementById('history-list');
+  if(!d.history||!d.history.length){
+    c.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px 20px;font-size:0.9rem;">Aún no hay tiradas</div>';
+    return;
+  }
+  c.innerHTML = d.history.map(h=>{
+    const t = new Date(h.pulled_at+'Z').toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const pb= h.was_hard_pity?'<span class="hist-pity-badge">🔱 HARD</span>':h.was_soft_pity?'<span class="hist-pity-badge">⚡ SOFT</span>':'';
+    const emoji = charEmoji(h.character_id);
+    return `<div class="hist-item r${h.rarity}">
+      <img class="hist-avatar" src="/images/${h.character_id}.png"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="hist-avatar-placeholder" style="display:none">${emoji}</div>
+      <div class="hist-info">
+        <div class="hist-name">${h.character_name}</div>
+        <div class="hist-element">${EL_EMOJI[h.element]||''} ${h.element||''}</div>
+      </div>
+      ${pb}
+      <span class="hist-rarity ${h.rarity}">${h.rarity}</span>
+      <span class="hist-time">${t}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+async function loadStats(){
+  const d = await fetch(`${API}/api/stats/${PLAYER}`).then(r=>r.json());
+  const t = d.totals||{};
+  document.getElementById('s-total').textContent   = t.total||0;
+  document.getElementById('s-ssr').textContent     = t.ssr||0;
+  document.getElementById('s-sr').textContent      = t.sr||0;
+  document.getElementById('s-r').textContent       = t.r||0;
+  document.getElementById('s-soft').textContent    = t.soft_pity_hits||0;
+  document.getElementById('s-hard').textContent    = t.hard_pity_hits||0;
+  document.getElementById('s-featured').textContent= t.destacados||0;
+  // 50/50 desde pity_per_banner (acumulado por banner)
+  const pBanners = d.pity_per_banner || [];
+  const fiftyWins  = pBanners.reduce((s,p)=>s+(p.total_fifty_fifty_wins||0), 0);
+  const fiftyLoss  = pBanners.reduce((s,p)=>s+(p.total_fifty_fifty_losses||0), 0);
+  const el50w = document.getElementById('s-50wins');
+  const el50l = document.getElementById('s-50loss');
+  if (el50w) el50w.textContent = fiftyWins;
+  if (el50l) el50l.textContent = fiftyLoss;
+  const rate = t.total>0 ? ((t.ssr/t.total)*100).toFixed(2) : '0.00';
+  document.getElementById('s-rate').textContent    = rate+'%';
+}
+
+// ── Resources ─────────────────────────────────────────────────────
+async function addRes(coins, tickets){
+  const d = await fetch(`${API}/api/player/${PLAYER}/add_resources`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({coins,tickets})
+  }).then(r=>r.json());
+  document.getElementById('coins').textContent   = d.coins.toLocaleString('es-MX');
+  document.getElementById('tickets').textContent = d.tickets;
+  showToast(`✅ ${coins?'+'+coins.toLocaleString()+' 🪙':''} ${tickets?'+'+tickets+' 🎫':''}`.trim(),'ok');
+}
+
+// ── Rate chart (canvas) ───────────────────────────────────────────
+async function drawChart(){
+  try{
+    const d = await fetch(`${API}/api/banners/rates?banner_id=${selectedBanner}`).then(r=>r.json());
+    const canvas = document.getElementById('rate-chart');
+    const ctx = canvas.getContext('2d');
+    canvas.width  = canvas.offsetWidth  * devicePixelRatio;
+    canvas.height = canvas.offsetHeight * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    const rates = d.rates;
+    const maxR = Math.max(...rates.map(r=>r.ssr_rate));
+    ctx.clearRect(0,0,W,H);
+
+    // Gradient fill
+    const grd = ctx.createLinearGradient(0,0,0,H);
+    grd.addColorStop(0,'rgba(160,96,255,0.35)');
+    grd.addColorStop(1,'rgba(160,96,255,0)');
+    ctx.beginPath();
+    rates.forEach((pt,i)=>{
+      const x=(i/(rates.length-1))*W;
+      const y=H-((pt.ssr_rate/maxR)*H*0.85)-H*0.05;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+    ctx.fillStyle=grd; ctx.fill();
+
+    // Line
+    ctx.beginPath(); ctx.strokeStyle='#b088ff'; ctx.lineWidth=1.5;
+    rates.forEach((pt,i)=>{
+      const x=(i/(rates.length-1))*W;
+      const y=H-((pt.ssr_rate/maxR)*H*0.85)-H*0.05;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    // Soft pity line
+    const b = bannerData[selectedBanner];
+    if(b){
+      const sx=(b.soft_pity_start/(rates.length-1))*W;
+      ctx.setLineDash([3,4]); ctx.strokeStyle='rgba(240,192,96,0.5)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(sx,0); ctx.lineTo(sx,H); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(240,192,96,0.8)'; ctx.font=`10px 'Nunito'`;
+      ctx.fillText('soft',sx+3,12);
+    }
+  }catch(e){}
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function switchTab(id,el){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+init();
+</script>
+</body>
+</html>

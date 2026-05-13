@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+
+  # ─── API Gateway (puerto público) ───────────────────────────────────────────
+  api-gateway:
+    build: ./api-gateway
+    container_name: gacha_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - INVENTORY_URL=http://inventory-service:5001
+      - BANNER_URL=http://banner-service:5002
+      - PITY_URL=http://pity-service:5003
+    depends_on:
+      inventory-service:
+        condition: service_healthy
+      banner-service:
+        condition: service_healthy
+      pity-service:
+        condition: service_healthy
+    networks:
+      - gacha_net
+    restart: unless-stopped
+
+  # ─── Microservicio de Inventario ─────────────────────────────────────────────
+  inventory-service:
+    build: ./inventory-service
+    container_name: gacha_inventory
+    ports:
+      - "5001:5001"
+    volumes:
+      - inventory_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gacha_net
+    restart: unless-stopped
+
+  # ─── Microservicio de Banners / RNG ──────────────────────────────────────────
+  banner-service:
+    build: ./banner-service
+    container_name: gacha_banner
+    ports:
+      - "5002:5002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5002/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gacha_net
+    restart: unless-stopped
+
+  # ─── Microservicio de Pity / Historial ───────────────────────────────────────
+  pity-service:
+    build: ./pity-service
+    container_name: gacha_pity
+    ports:
+      - "5003:5003"
+    volumes:
+      - pity_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5003/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gacha_net
+    restart: unless-stopped
+
+  # ─── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: gacha_frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - gacha_net
+    restart: unless-stopped
+
+volumes:
+  inventory_data:
+  pity_data:
+
+networks:
+  gacha_net:
+    driver: bridge
